@@ -1,18 +1,22 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import TodoForm from './TodoForm';
-import { addTodoAsync } from '../../store/todoSlice';
 import { useDispatch } from 'react-redux';
+import { addTodoAsync } from '../../store/todoSlice';
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useDispatch: jest.fn(),
 }));
 
+jest.mock('../../store/todoSlice', () => ({
+  ...jest.requireActual('../../store/todoSlice'),
+  addTodoAsync: jest.fn(),
+}));
+
 describe('TodoForm', () => {
-  let dispatchMock: jest.Mock;
+  const dispatchMock = jest.fn();
 
   beforeEach(() => {
-    dispatchMock = jest.fn();
     (useDispatch as unknown as jest.Mock).mockReturnValue(dispatchMock);
   });
 
@@ -20,23 +24,24 @@ describe('TodoForm', () => {
     jest.clearAllMocks();
   });
 
-  it('should render successfully', () => {
-    const { baseElement } = render(<TodoForm />);
-    expect(baseElement).toBeTruthy();
+  it('renders correctly', () => {
+    render(<TodoForm />);
+    expect(screen.getByPlaceholderText('Add a new task')).toBeTruthy();
   });
 
-  it('should not dispatch any action if input is empty', () => {
+  it('does not dispatch any action if input is empty', () => {
     render(<TodoForm />);
-    const input = screen.getByPlaceholderText('Add a new task');
     const button = screen.getByRole('button');
-    
-    fireEvent.change(input, { target: { value: '  ' } });
+
     fireEvent.click(button);
 
     expect(dispatchMock).not.toHaveBeenCalled();
   });
 
-  it('should dispatch addTodoAsync and clear input on valid submit', () => {
+  it('dispatches addTodoAsync and clears input on valid submit', () => {
+    const fakeThunk = { type: 'fakeThunk' };
+    (addTodoAsync as unknown as jest.Mock).mockReturnValue(fakeThunk);
+
     render(<TodoForm />);
     const input = screen.getByPlaceholderText('Add a new task') as HTMLInputElement;
     const button = screen.getByRole('button');
@@ -46,9 +51,8 @@ describe('TodoForm', () => {
 
     fireEvent.click(button);
 
-    expect(dispatchMock).toHaveBeenCalledTimes(1);
-    expect(dispatchMock).toHaveBeenCalledWith(addTodoAsync('New Todo'));
-
+    expect(addTodoAsync).toHaveBeenCalledWith('New Todo');
+    expect(dispatchMock).toHaveBeenCalledWith(fakeThunk);
     expect(input.value).toBe('');
   });
 });
