@@ -1,0 +1,26 @@
+.container {
+    padding: 22px 20px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #15101C;
+    color: #9E78CF;
+    border-radius: 10px;
+
+    &.completed {
+        color: #78CFB0;
+    }
+
+    button {
+        border: none;
+        cursor: pointer;
+        background-color: transparent;
+        margin-left: 8px;
+    }
+
+    .icon {
+        color: #9E78CF;
+        width: 30px;
+    }
+}
